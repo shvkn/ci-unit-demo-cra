@@ -1,0 +1,58 @@
+name: e2e_tests
+on:
+  workflow_call:
+    outputs:
+      status:
+        description: "E2E status"
+        value: ${{ jobs.e2e.outputs.status }}
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.e2e.outcome }}
+    steps:
+      - name: Копирование репозитория
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Установка NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Get short SHA
+        id: short_sha
+        run: |
+          SHORT_SHA=$(git rev-parse --short ${{ GITHUB.SHA }})
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+        shell: bash
+      - name: Get versions
+        id: version_tags
+        run: |
+          CURRENT_VERSION=${{ GITHUB.REF_NAME }}
+          PREVIOUS_VERSION=$(git describe --abbrev=0 --tags ${{ GITHUB.REF_NAME }}^)
+          echo "current=${CURRENT_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "previous=${PREVIOUS_VERSION}" >> "$GITHUB_OUTPUT"
+      - name: Кэширование зависимостей
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Установка зависимостей
+        run: |
+          npm ci
+      - name: Зависимости Playwright
+        run: |
+          npx playwright install --with-deps
+      - name: Сборка
+        run: |
+          npm run build
+      - name: Запуск e2e тестов
+        id: e2e
+        run: |
+          npx playwright test
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-report-${{ steps.version_tags.outputs.current }}-${{ steps.short_sha.outputs.short_sha }}
+          path: playwright-report/
+          retention-days: 30

@@ -1,0 +1,31 @@
+name: lint
+on:
+  workflow_call:
+    outputs:
+      status:
+        description: "Linter status"
+        value: ${{ jobs.linter.outputs.status }}
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.linter.outcome }}
+    steps:
+      - name: Копирование репозитория
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Установка NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Кэширование зависимостей
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Установка зависимостей
+        run: npm ci
+      - name: Запуски линтеров
+        id: linter
+        run: npm run lint
