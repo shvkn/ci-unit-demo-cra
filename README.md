@@ -34,6 +34,7 @@ git push -u origin release-v* --follow-tags
 ```git
 git checkout develop
 git rebase master
+git push
 ```
 
 ### Если тесты упали
