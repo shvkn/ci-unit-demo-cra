@@ -3,7 +3,7 @@ import { Routes, Route, Link } from "react-router-dom";
 
 import { About } from "./pages/About";
 import { Home } from "./pages/Home";
-
+//fix for release 3
 export const Application: FC = () => {
   const home = <Home />;
   const about = <About />;
