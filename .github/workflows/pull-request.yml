@@ -67,13 +67,6 @@ jobs:
           SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
           echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
         shell: bash
-      - name: Get versions
-        id: version_tags
-        run: |
-          CURRENT_VERSION=${{ github.ref }}
-          PREVIOUS_VERSION=$(git describe --abbrev=0 --tags ${{ github.ref }}^)
-          echo "current=${CURRENT_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "previous=${PREVIOUS_VERSION}" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v3
         with:
           path: ~/.npm
@@ -89,7 +82,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: "e2e-tests-report-${{ github.ref }}-${{ steps.short_sha.outputs.short_sha}}"
+          name: "e2e-tests-report-${{ steps.short_sha.outputs.short_sha}}"
           path: playwright-report/
           retention-days: 30
 
@@ -110,13 +103,6 @@ jobs:
           SHORT_SHA=$(git rev-parse --short ${{ GITHUB.SHA }})
           echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
         shell: bash
-      - name: Get versions
-        id: version_tags
-        run: |
-          CURRENT_VERSION=${{ GITHUB.ref }}
-          PREVIOUS_VERSION=$(git describe --abbrev=0 --tags ${{ GITHUB.ref }}^)
-          echo "current=${CURRENT_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "previous=${PREVIOUS_VERSION}" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v3
         with:
           path: ~/.npm
@@ -131,6 +117,6 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: "${{ GITHUB.ref }}-${{ steps.short_sha.outputs.short_sha}}"
+          name: "unit-tests-report-${{ steps.short_sha.outputs.short_sha}}"
           path: test-report.html
           retention-days: 30
